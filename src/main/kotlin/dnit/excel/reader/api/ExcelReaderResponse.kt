@@ -12,5 +12,5 @@ data class ExcelReaderResponse<T> (
     val processedSheet: Boolean,
     val sheetName: String?,
     val data: List<T>?,
-    val exception: Exception? = null
+    val exception: Throwable? = null
 )

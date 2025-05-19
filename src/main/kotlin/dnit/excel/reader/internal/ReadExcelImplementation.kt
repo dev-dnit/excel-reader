@@ -95,7 +95,7 @@ internal fun <T> readExcelImpl(
             }
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         ExcelReaderResponse(processedSheet = false,
                             sheetName = sheetName,
                             data = emptyList(),
