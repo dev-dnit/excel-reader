@@ -125,7 +125,8 @@ private fun <T> processSheet(
             }
 
         } catch (e: Exception) {
-            throw ExcelReaderException("Error processing row: ${row.rowNum}", e)
+            if (e is ExcelReaderException) throw e
+            else throw ExcelReaderException("Error processing row: ${row.rowNum}", e)
         }
 
     }
@@ -161,7 +162,7 @@ private fun <T> processRow(
             if (conditions.amountEmptyRowsUntilHeader++ > EXCEL_MAX_LINE_FINDER) {
                 // If the number of empty rows is greater than the limit, we stop the processing
                 throw ExcelReaderException(
-                    "Header was not found in the first $EXCEL_MAX_LINE_FINDER rows."
+                    "Header not found in the first $EXCEL_MAX_LINE_FINDER rows."
                 )
             }
         }
