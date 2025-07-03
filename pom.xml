@@ -7,7 +7,7 @@
 
     <groupId>dnit.excel.reader</groupId>
     <artifactId>excel-reader</artifactId>
-    <version>1.2</version>
+    <version>1.2.1</version>
 
 
     <name>Excel Reader</name>

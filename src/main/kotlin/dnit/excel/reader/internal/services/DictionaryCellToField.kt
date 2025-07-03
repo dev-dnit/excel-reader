@@ -99,7 +99,7 @@ internal class DictionaryCellToField(private val fields: List<ExcelFields>) {
     }
 
 
-    fun dictionaryColumnExcelIndexToField(row: Row) : Map<Int, ExcelFields> {
+    fun dictionaryColumnExcelIndexToField() : Map<Int, ExcelFields> {
         return mapColumnExcelIndexToField
     }
 

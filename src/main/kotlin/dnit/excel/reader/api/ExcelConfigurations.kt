@@ -12,7 +12,7 @@ object ExcelConfigurations {
      * This limit is used to prevent excessive data lookup and processing.
      */
     @JvmField
-    var EXCEL_MAX_COLUMN_FINDER : Int = 250
+    var EXCEL_MAX_COLUMN_FINDER : Int = 500
 
 
     /**

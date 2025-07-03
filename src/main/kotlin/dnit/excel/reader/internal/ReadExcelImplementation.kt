@@ -12,8 +12,8 @@ import dnit.excel.reader.internal.services.DictionaryCellToField
 import dnit.excel.reader.internal.services.instantiate
 import dnit.excel.reader.internal.services.listExcelFields
 import dnit.excel.reader.internal.validation.checkIfClassHasNoArgsConstructor
-import dnit.excel.reader.internal.validation.rowsContainsContent
 import java.io.File
+import dnit.excel.reader.internal.validation.rowsContainsContent
 import java.io.FileInputStream
 import java.util.stream.Collectors
 import org.dhatim.fastexcel.reader.ReadableWorkbook
@@ -116,14 +116,15 @@ private fun <T> processSheet(
     val list = mutableListOf<T>()
     val cellToField = DictionaryCellToField(fields)
     val commonRows = CommonRows(ExcelConfigurations.EXCEL_HEADER_DETECTION_THRESHOLD)
+    var latestRow = 0
 
     for (row in sheet.openStream()) {
         try {
-            val shouldBreak = processRow(commonRows, list, cellToField, row, conditions, clazz)
+            val shouldBreak = processRow(commonRows, list, cellToField, row, conditions, clazz, latestRow)
             if (shouldBreak) {
                 break
             }
-
+            latestRow = row.rowNum
         } catch (e: Exception) {
             if (e is ExcelReaderException) throw e
             else throw ExcelReaderException("Error processing row: ${row.rowNum}", e)
@@ -150,6 +151,7 @@ private fun <T> processRow(
     row : Row,
     conditions : RowLimitConditions,
     clazz : Class<T>,
+    latestRow : Int
 ) : Boolean {
     if (cellToField.headerWasNotFound()) {
         if (cellToField.isRowAHeader(row, commonRows)) {
@@ -159,7 +161,8 @@ private fun <T> processRow(
 
         } else {
             // Header still wasn't found, we increment the number of empty rows before header
-            if (conditions.amountEmptyRowsUntilHeader++ > EXCEL_MAX_LINE_FINDER) {
+            if (conditions.increaseEmptyRowsUntilHeader() >= EXCEL_MAX_LINE_FINDER
+                || row.rowNum >= EXCEL_MAX_LINE_FINDER) {
                 // If the number of empty rows is greater than the limit, we stop the processing
                 throw ExcelReaderException(
                     "Header not found in the first $EXCEL_MAX_LINE_FINDER rows."
@@ -168,19 +171,24 @@ private fun <T> processRow(
         }
 
     } else {
-        if (rowsContainsContent(row)) {
+        if (row.rowNum - latestRow > EXCEL_MAX_EMPTY_SEQUENTIAL_ROWS) {
+            return true
+        }
+
+        if (rowsContainsContent(row, cellToField.dictionaryColumnExcelIndexToField())) {
             // Process the row and generate a new instance of the class
-            val map = cellToField.dictionaryColumnExcelIndexToField(row)
+            val map = cellToField.dictionaryColumnExcelIndexToField()
             val instance = instantiate(row, map, clazz)
 
             if (instance != null) {
                 list.add(instance)
-                conditions.amountEmptyRowsAfterHeader = 0
+                conditions.resetEmptRowsAfterHeader()
             }
 
         } else {
+
             // If the row is empty, we increase the number of empty rows.
-            if (conditions.amountEmptyRowsAfterHeader++ > EXCEL_MAX_EMPTY_SEQUENTIAL_ROWS) {
+            if (conditions.increaseEmptyRowsAfterHeader() >= EXCEL_MAX_EMPTY_SEQUENTIAL_ROWS) {
                 // we stop the processing gracefully
                 return true
             }
