@@ -176,8 +176,7 @@ private fun <T> processRow(
             return true
         }
 
-        val contentValidation = rowsContainsContent(row, cellToField.dictionaryColumnExcelIndexToField())
-        if (contentValidation.containsContent) {
+        if (rowsContainsContent(row, cellToField.dictionaryColumnExcelIndexToField())) {
             // Process the row and generate a new instance of the class
             val map = cellToField.dictionaryColumnExcelIndexToField()
             val instance = instantiate(row, map, clazz)
@@ -185,14 +184,6 @@ private fun <T> processRow(
             if (instance != null) {
                 list.add(instance)
                 conditions.resetEmptRowsAfterHeader()
-            }
-
-        } else if (contentValidation.wasFalsePositive) {
-
-            // If the row is empty, we increase the number of empty rows.
-            if (conditions.increaseFalsePositiveRows() >= EXCEL_MAX_EMPTY_SEQUENTIAL_ROWS * 10_000) {
-                // we stop the processing gracefully
-                return true
             }
 
         } else {

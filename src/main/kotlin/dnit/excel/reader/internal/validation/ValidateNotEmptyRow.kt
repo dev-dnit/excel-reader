@@ -11,22 +11,15 @@ import org.dhatim.fastexcel.reader.Row
 internal fun rowsContainsContent(
     row : Row,
     dictionaryColumnExcelIndexToField : Map<Int, ExcelFields>,
-) : ExcelContainsContent {
+) : Boolean {
 
     return try {
-        return ExcelContainsContent(
-            dictionaryColumnExcelIndexToField.keys.any { row.getCell(it)?.value != null }
-        )
+        return dictionaryColumnExcelIndexToField.keys.any { row.getCell(it)?.value != null }
 
     } catch (_ : Throwable) {
         // Sometimes, the fastExcel is throwing some false rows with all [nulls] that are not
         // consistent with the actual excel
-        ExcelContainsContent(containsContent = false, wasFalsePositive = true)
+        false
     }
 }
-
-internal data class ExcelContainsContent(
-    val containsContent : Boolean,
-    val wasFalsePositive : Boolean = false,
-)
 
